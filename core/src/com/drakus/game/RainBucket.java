@@ -3,6 +3,7 @@ package com.drakus.game;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
@@ -10,6 +11,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.math.MathUtils;
@@ -26,7 +28,7 @@ public class RainBucket extends ApplicationAdapter {
 	private Texture dropImage;
 	private Texture bucketImage;
 	private Texture gameOverImage;
-	private BitmapFont font;
+	private BitmapFont font, pausedFont;
 	//private Texture gameWonImage;
 	private Sound dropSound;
 	private Music rainMusic;
@@ -38,14 +40,17 @@ public class RainBucket extends ApplicationAdapter {
 	//private boolean isPaused;
 	private boolean isResumed;
 	private boolean isOver;
+	private boolean isPaused;
 	private int bottom;
 	private int m_height;
 	private int m_width;
 	private int score;
 	private int deltaScore;
 	private String str;
+	private float layoutWidth, layoutHeight;
 	private FreeTypeFontGenerator generator;
 	private FreeTypeFontGenerator.FreeTypeFontParameter parameter;
+	private GlyphLayout pauseLayout;
 
 	@Override
 	public void create () {
@@ -66,6 +71,12 @@ public class RainBucket extends ApplicationAdapter {
 		parameter.size = 23;
 		//parameter.borderWidth = 2.0f;
 		font = generator.generateFont(parameter);
+		parameter.size = 30;
+
+		pausedFont = generator.generateFont(parameter);
+		pauseLayout = new GlyphLayout(pausedFont, "Game paused");
+		layoutWidth = pauseLayout.width;
+		layoutHeight = pauseLayout.height;
 		//font.setColor(Color.WHITE);
 		//font.getData().setScale(1.4f, 1.4f);
 
@@ -87,7 +98,7 @@ public class RainBucket extends ApplicationAdapter {
 		bottom = 15;
 		isOver = false;
 		isResumed = true;
-		//isPaused = false;
+		isPaused = false;
 		score = 0;
 		deltaScore = 1;
 		str = "Score: " + score;
@@ -123,6 +134,12 @@ public class RainBucket extends ApplicationAdapter {
 		if (isOver) {
 
 			onFinish();
+			if (Gdx.input.isTouched()) {
+				isResumed = true;
+				//isPaused = false;
+				isOver = false;
+				onStart();
+			}
 
 		} else {
 
@@ -133,6 +150,14 @@ public class RainBucket extends ApplicationAdapter {
 
 			batch.setProjectionMatrix(camera.combined);
 			drawObjects();
+
+			if (isPaused) {
+				onPause();
+				if (Gdx.input.isTouched()) {
+					isResumed = true;
+					isPaused = false;
+				}
+			}
 
 			if (isResumed) {
 				if (Gdx.input.isTouched()) {
@@ -168,6 +193,7 @@ public class RainBucket extends ApplicationAdapter {
 					if (raindrop.y + 64 < bottom) {
 
 						gameOver();
+						//iter.remove();
 
 					}
 
@@ -188,6 +214,30 @@ public class RainBucket extends ApplicationAdapter {
 
 	}
 
+	private void onStart() {
+
+		Iterator<Rectangle> iter = rainDrops.iterator();
+
+		while (iter.hasNext()) {
+
+			iter.next();
+			iter.remove();
+
+		}
+
+		bucket.x = m_width / 2 - 64 / 2;
+		score = 0;
+		str = "Score: " + score;
+	}
+
+	private void onPause() {
+
+		batch.begin();
+		pausedFont.draw(batch, "Game paused", m_width/ 2 - layoutWidth / 2, m_height/ 2 - layoutHeight / 2);
+		batch.end();
+
+	}
+
 
 	private void onFinish() {
 
@@ -203,13 +253,14 @@ public class RainBucket extends ApplicationAdapter {
 		batch.draw(gameOverImage, 0, 0);
 		batch.end();
 
-		camera.update();
+		//camera.update();
 	}
 
 	private void drawScore() {
 
 		batch.begin();
 		//font.draw(batch, "Hello World", 500, 20);
+
 		font.draw(batch, str, 630, 460);
 		batch.end();
 
@@ -217,13 +268,14 @@ public class RainBucket extends ApplicationAdapter {
 
 	@Override
 	public void dispose () {
+		super.dispose();
 		batch.dispose();
 		dropSound.dispose();
 		dropImage.dispose();
 		bucketImage.dispose();
 		rainMusic.dispose();
 		font.dispose();
-		super.dispose();
+		generator.dispose();
 	}
 
 	private void gameOver() {
@@ -245,18 +297,17 @@ public class RainBucket extends ApplicationAdapter {
 
 	@Override
 	public void pause() {
+
 		rainMusic.pause();
-		//isPaused = true;
+		isPaused = true;
 		isResumed = false;
 	}
 
 	@Override
 	public void resume() {
-		if (Gdx.input.isTouched()) {
-			rainMusic.play();
-			//isPaused = false;
-			isResumed = true;
-		}
+
+		rainMusic.play();
+
 	}
 
 }
