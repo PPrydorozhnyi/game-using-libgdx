@@ -3,6 +3,7 @@ package com.drakus.game;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
@@ -45,7 +46,7 @@ public class RainBucket extends ApplicationAdapter {
 	private int m_height;
 	private int m_width;
 	private int score;
-	private int deltaScore;
+	private float deltaScore;
 	private String str;
 	private float layoutWidth, layoutHeight;
 	private FreeTypeFontGenerator generator;
@@ -109,6 +110,14 @@ public class RainBucket extends ApplicationAdapter {
 		rainDrops = new Array<Rectangle>();
 		spawnDrops();
 
+		/*Gdx.input.setInputProcessor(new InputAdapter () {
+			@Override
+			public boolean touchDragged (int x, int y, int pointer) {
+				isResumed = false;
+				isPaused = true;
+				return false;
+			}
+		});*/
 	}
 
 	private void spawnDrops () {
@@ -170,17 +179,19 @@ public class RainBucket extends ApplicationAdapter {
 
 				}
 
-				//if (Gdx.input.isKeyPressed(Input.Keys.LEFT))
-				//bucket.x -= 200 * Gdx.graphics.getDeltaTime();
-				//if (Gdx.input.isKeyPressed(Input.Keys.RIGHT))
-				//bucket.x += 200 * Gdx.graphics.getDeltaTime();
+				if (Gdx.input.isKeyPressed(Input.Keys.LEFT))
+				bucket.x -= 600 * Gdx.graphics.getDeltaTime();
+				if (Gdx.input.isKeyPressed(Input.Keys.RIGHT))
+				bucket.x += 600 * Gdx.graphics.getDeltaTime();
 
 				if (bucket.x < 0)
 					bucket.x = 0;
 				if (bucket.x > m_width - bucket.width)
 					bucket.x = m_width - bucket.width;
 
-				if (TimeUtils.nanoTime() - lastDropTime > 1000000000)
+				if (TimeUtils.nanoTime() - lastDropTime > 600000000)
+					spawnDrops();
+				if (rainDrops.size < 3)
 					spawnDrops();
 
 				Iterator<Rectangle> iter = rainDrops.iterator();
@@ -188,7 +199,7 @@ public class RainBucket extends ApplicationAdapter {
 				while (iter.hasNext()) {
 
 					Rectangle raindrop = iter.next();
-					raindrop.y -= 200 * Gdx.graphics.getDeltaTime();
+					raindrop.y -= deltaScore * 200 * Gdx.graphics.getDeltaTime();
 
 					if (raindrop.y + 64 < bottom) {
 
@@ -205,12 +216,38 @@ public class RainBucket extends ApplicationAdapter {
 						iter.remove();
 						score += deltaScore;
 						str = "Score: " + score;
+						//int am = rainDrops.size;
+						//System.out.println(am);
 					}
 				}
 			}
 		}
 
 		drawScore();
+
+		if (score <= 25)
+
+			deltaScore = 1f;
+
+		else if (score <= 500)
+
+			deltaScore = 1.0f + 0.085f * (score / 25);
+			//if (score > 25 && score <= 50)
+
+			/*deltaScore = 1.1f;
+
+		else if (score > 50 && score <= 100)
+
+			deltaScore = 1.2f;
+
+		else if (score > 100 && score <= 200)
+
+			deltaScore = 1.4f;
+
+		else
+
+			deltaScore = 1.8f;*/
+
 
 	}
 
@@ -309,5 +346,6 @@ public class RainBucket extends ApplicationAdapter {
 		rainMusic.play();
 
 	}
+
 
 }
