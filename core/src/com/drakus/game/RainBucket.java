@@ -191,7 +191,7 @@ public class RainBucket extends ApplicationAdapter {
 
 				if (TimeUtils.nanoTime() - lastDropTime > 600000000)
 					spawnDrops();
-				if (rainDrops.size < 3)
+				if (rainDrops.size < 3 && score != 0)
 					spawnDrops();
 
 				Iterator<Rectangle> iter = rainDrops.iterator();
