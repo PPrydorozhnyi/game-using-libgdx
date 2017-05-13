@@ -65,7 +65,7 @@ public class RainBucket extends ApplicationAdapter {
 		batch = new SpriteBatch();
 		dropImage = new Texture("droplet.png");
 		bucketImage = new Texture("bucket.png");
-		gameOverImage = new Texture("game-over.jpg");
+		gameOverImage = new Texture("game-over2.jpg");
 
 		generator = new FreeTypeFontGenerator(Gdx.files.internal("courbd.ttf"));
 		parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
@@ -143,6 +143,7 @@ public class RainBucket extends ApplicationAdapter {
 		if (isOver) {
 
 			onFinish();
+			drawScore(m_width/ 2 - layoutWidth / 2, m_height/ 2 - layoutHeight / 2, pausedFont);
 			if (Gdx.input.isTouched()) {
 				isResumed = true;
 				//isPaused = false;
@@ -221,9 +222,9 @@ public class RainBucket extends ApplicationAdapter {
 					}
 				}
 			}
+			drawScore(630, 460, font);
 		}
 
-		drawScore();
 
 		if (score <= 25)
 
@@ -293,12 +294,12 @@ public class RainBucket extends ApplicationAdapter {
 		//camera.update();
 	}
 
-	private void drawScore() {
+	private void drawScore(float width, float height, BitmapFont currentFont) {
 
 		batch.begin();
 		//font.draw(batch, "Hello World", 500, 20);
 
-		font.draw(batch, str, 630, 460);
+		currentFont.draw(batch, str, width, height);
 		batch.end();
 
 	}
